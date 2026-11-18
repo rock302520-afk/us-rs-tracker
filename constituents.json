@@ -1,0 +1,41 @@
+{
+  "_note": "成分股清單。SOX 依 Nasdaq 官方權重檔 (2026/11/02)；NDX 每年 12 月重組，update_data.py 會先嘗試自動抓最新清單，失敗才用這份。",
+  "SOX": {
+    "name": "費城半導體指數",
+    "index": "^SOX",
+    "stocks": {
+      "AMD": "超微", "ADI": "亞德諾", "AMAT": "應用材料", "ARM": "安謀", "ASML": "艾司摩爾",
+      "ALAB": "Astera Labs", "AVGO": "博通", "COHR": "Coherent", "CRDO": "Credo", "ENTG": "Entegris",
+      "GFS": "格芯", "INTC": "英特爾", "KLAC": "科磊", "LRCX": "科林研發", "LSCC": "萊迪思",
+      "MTSI": "MACOM", "MRVL": "邁威爾", "MCHP": "微芯", "MU": "美光", "MPWR": "芯源系統",
+      "NVDA": "輝達", "NXPI": "恩智浦", "ON": "安森美", "Q": "Qnity Electronics", "QCOM": "高通",
+      "SITM": "SiTime", "TSM": "台積電 ADR", "TER": "泰瑞達", "TXN": "德州儀器", "TSEM": "高塔半導體"
+    }
+  },
+  "NDX": {
+    "name": "納斯達克100指數",
+    "index": "^NDX",
+    "stocks": {
+      "AAPL": "蘋果", "NVDA": "輝達", "MSFT": "微軟", "AMZN": "亞馬遜", "MU": "美光", "AMD": "超微",
+      "TSLA": "特斯拉", "META": "Meta", "GOOGL": "Alphabet A", "WMT": "沃爾瑪", "AVGO": "博通",
+      "SPCX": "", "GOOG": "Alphabet C", "COST": "好市多", "PLTR": "Palantir", "CSCO": "思科",
+      "INTC": "英特爾", "AMAT": "應用材料", "LRCX": "科林研發", "TXN": "德州儀器", "PANW": "Palo Alto",
+      "NFLX": "Netflix", "AMGN": "安進", "LIN": "林德", "CRWD": "CrowdStrike", "GILD": "吉利德",
+      "KLAC": "科磊", "PEP": "百事", "ADI": "亞德諾", "TMUS": "T-Mobile", "QCOM": "高通",
+      "SHOP": "Shopify", "ISRG": "直覺外科", "ASML": "艾司摩爾", "MRVL": "邁威爾", "VRTX": "福泰製藥",
+      "SNDK": "SanDisk", "APP": "AppLovin", "ADP": "ADP", "SBUX": "星巴克", "BKNG": "Booking",
+      "STX": "希捷", "MAR": "萬豪", "WDC": "威騰", "CEG": "Constellation", "ADBE": "Adobe",
+      "REGN": "再生元", "CSX": "CSX", "INTU": "Intuit", "FTNT": "Fortinet", "MNST": "怪物飲料",
+      "CTAS": "Cintas", "MRNA": "莫德納", "CMCSA": "康卡斯特", "CDNS": "益華", "SNPS": "新思",
+      "MDLZ": "億滋", "ARM": "安謀", "ABNB": "Airbnb", "MELI": "MercadoLibre", "ORLY": "O'Reilly",
+      "ROST": "Ross", "HON": "霍尼韋爾", "AEP": "美國電力", "DASH": "DoorDash", "MPWR": "芯源系統",
+      "NXPI": "恩智浦", "FAST": "Fastenal", "DDOG": "Datadog", "PCAR": "Paccar", "IDXX": "IDEXX",
+      "ADSK": "Autodesk", "LITE": "Lumentum", "PDD": "拼多多", "HONA": "", "FANG": "Diamondback",
+      "CCEP": "可口可樂歐太", "XEL": "Xcel", "PYPL": "PayPal", "KDP": "Keurig Dr Pepper", "BKR": "貝克休斯",
+      "EXC": "Exelon", "ROP": "Roper", "FER": "Ferrovial", "TTWO": "Take-Two", "TRI": "湯森路透",
+      "PAYX": "Paychex", "MSTR": "Strategy", "TER": "泰瑞達", "ALAB": "Astera Labs", "WDAY": "Workday",
+      "GEHC": "GE醫療", "RKLB": "Rocket Lab", "ODFL": "Old Dominion", "MCHP": "微芯", "DXCM": "德康",
+      "CPRT": "Copart", "NBIS": "Nebius", "AXON": "Axon", "CRWV": "CoreWeave", "ALNY": "Alnylam"
+    }
+  }
+}
