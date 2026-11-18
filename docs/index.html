@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>每日美股強弱股｜SOX・NDX 成分股 vs 指數</title>
+<style>
+:root{
+  --bg:#f5f5f3; --surface:#fcfcfb; --line:#e4e3df; --grid:#ecebe7;
+  --t1:#0b0b0b; --t2:#52514e; --t3:#8a8984;
+  --strong:#e34948; --strong-bg:#fbe4e3; --weak:#008300; --weak-bg:#e0f1e0;
+  --s1:#2a78d6; --idx:#8a8984; --accent:#2a78d6; --mid:#f0efec;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121211; --surface:#1a1a19; --line:#2e2e2c; --grid:#262624;
+  --t1:#f0efec; --t2:#c3c2b7; --t3:#8d8c85;
+  --strong:#e66767; --strong-bg:#3a2020; --weak:#0ca30c; --weak-bg:#16301a;
+  --s1:#3987e5; --idx:#8d8c85; --accent:#3987e5; --mid:#383835;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t1);font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px;margin-bottom:12px}
+h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.2px}
+.sub{color:var(--t2);font-size:12px}
+.banner{background:#fff4d6;color:#5c4400;border:1px solid #f0d58a;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13px}
+@media (prefers-color-scheme: dark){.banner{background:#3a2f12;color:#f3dc9b;border-color:#5c4a1a}}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px;width:max-content;max-width:100%}
+.tab{border:0;background:none;color:var(--t2);padding:7px 14px;border-radius:7px;font:inherit;font-weight:600;cursor:pointer}
+.tab.on{background:var(--t1);color:var(--surface)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.controls label{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:6px}
+select,input[type=search]{font:inherit;color:var(--t1);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:6px 8px}
+input[type=search]{width:130px}
+.seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;font:inherit;color:var(--t2);padding:6px 10px;cursor:pointer}
+.seg button.on{background:var(--mid);color:var(--t1);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+@media (max-width:720px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tile .k{font-size:12px;color:var(--t2)}
+.tile .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.tile .d{font-size:12px;color:var(--t3)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+.card h2{font-size:14px;margin:0 0 2px;font-weight:700}
+.card .hint{font-size:12px;color:var(--t2);margin-bottom:6px}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--t1);color:var(--surface);font-size:12px;padding:6px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-8px;opacity:0;transition:opacity .08s;z-index:5;font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--t2);margin:2px 0 4px;flex-wrap:wrap}
+.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px;border-radius:2px}
+.legend i.dash{background:repeating-linear-gradient(90deg,var(--idx) 0 4px,transparent 4px 7px)!important}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-size:12px;color:var(--t2);font-weight:600;text-align:right;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;background:var(--surface)}
+th.l,td.l{text-align:left}
+th.sorted{color:var(--t1)}
+th.sorted::after{content:" ▼";font-size:9px}
+th.sorted.asc::after{content:" ▲"}
+td{padding:7px 8px;border-bottom:1px solid var(--grid);text-align:right;white-space:nowrap}
+tr.row{cursor:pointer}
+tr.row:hover td{background:var(--mid)}
+tr.row.sel td{background:var(--mid)}
+.tk{font-weight:700}
+.nm{color:var(--t2);font-size:12px;margin-left:6px}
+.rk{color:var(--t3);width:28px}
+.pos{color:var(--strong)} .neg{color:var(--weak)}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px}
+.badge.s{background:var(--strong-bg);color:var(--strong)}
+.badge.w{background:var(--weak-bg);color:var(--weak)}
+.badge.n{background:var(--mid);color:var(--t2)}
+.dots{letter-spacing:1px;font-size:11px}
+.dots b{color:var(--strong);font-weight:400}.dots s{color:var(--weak);text-decoration:none}.dots u{color:var(--t3);text-decoration:none}
+.spark{display:block}
+@media (max-width:720px){.hide-m{display:none}}
+.detail-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.detail-head .big{font-size:18px;font-weight:700}
+.raw{font-size:12px;color:var(--t2);background:var(--mid);border-radius:7px;padding:6px 10px;margin:4px 0 10px;line-height:1.7;font-variant-numeric:tabular-nums}
+.wm{position:fixed;inset:0;pointer-events:none;z-index:50;display:flex;align-items:center;justify-content:center;font-size:min(16vw,140px);font-weight:900;color:rgba(227,73,72,.10);transform:rotate(-24deg);white-space:nowrap}
+.banner.sample{position:sticky;top:0;z-index:40;font-size:14px;background:#ffe1df;color:#7a1412;border-color:#e34948}
+@media (prefers-color-scheme: dark){.banner.sample{background:#4a1d1c;color:#ffd2cf}}
+.empty{color:var(--t3);padding:24px;text-align:center}
+footer{color:var(--t3);font-size:12px;margin:16px 0 24px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>每日美股強弱股</h1>
+      <div class="sub" id="meta"></div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </header>
+  <div id="banner"></div>
+
+  <div class="controls">
+    <label>交易日 <select id="date"></select></label>
+    <label>排序 <select id="sort">
+      <option value="diff">當日強弱差</option>
+      <option value="ratio">差異比例</option>
+      <option value="rs5">近5日相對強度</option>
+      <option value="rs20">近20日相對強度</option>
+      <option value="rsAll">3個月相對強度</option>
+      <option value="win20">近20日強勢天數</option>
+    </select></label>
+    <div class="seg" id="filter">
+      <button data-f="all" class="on">全部</button><button data-f="s">強勢</button><button data-f="w">弱勢</button>
+    </div>
+    <input type="search" id="q" placeholder="搜尋代號/名稱">
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <h2>強勢股比例（每日）</h2>
+    <div class="hint">每天有多少比例的成分股漲幅勝過指數。點圖可切換交易日。</div>
+    <div class="chart" id="breadth"></div>
+  </div>
+
+  <div class="card" id="detail"></div>
+
+  <div class="card">
+    <h2 id="tblTitle">成分股強弱排行</h2>
+    <div class="hint">強弱差 = 個股漲跌幅 − 指數漲跌幅（百分點）。&gt;0 為強勢、&lt;0 為弱勢。差異比例 = 強弱差 ÷ |指數漲跌幅|，例：指數 +0.34%、個股 +2.33% → 差 +1.99 → 比例 +585%。點任一列看個股曲線。</div>
+    <div class="tbl-wrap"><table id="tbl"></table></div>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+const D = window.RS_DATA;
+if(!D){document.querySelector('.wrap').innerHTML='<div class="empty">找不到 data.js，請先執行 <code>python update_data.py</code></div>';return;}
+
+const $ = s=>document.querySelector(s);
+const css = v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmt = (v,d=2,sign=true)=> v==null||isNaN(v)?'—':(sign&&v>0?'+':'')+v.toFixed(d);
+const cls = v=> v==null?'':(v>0?'pos':v<0?'neg':'');
+
+const S = {g:0, di:null, sort:'diff', asc:false, f:'all', q:'', sel:null};
+
+// ---------- 計算 ----------
+function prep(g){
+  const n=g.dates.length;
+  g.rows = Object.entries(g.stocks).map(([t,s])=>{
+    const diff = s.chg.map((c,i)=> c==null||g.indexChg[i]==null?null: +(c-g.indexChg[i]).toFixed(2));
+    return {t, name:s.name, close:s.close, chg:s.chg, diff};
+  });
+  // 每日強勢家數比例
+  g.breadth = g.dates.map((_,i)=>{
+    let s=0,w=0; g.rows.forEach(r=>{const d=r.diff[i]; if(d==null)return; if(d>0)s++; else if(d<0)w++;});
+    return {s,w,p: s+w? s/(s+w)*100 : null};
+  });
+}
+// 相對強度：stock 區間報酬 相對 指數區間報酬（以比值計，%）
+function rs(r,g,i,N){
+  const j = N==null?0:i-N; if(j<0) return null;
+  const a=r.close[j], b=r.close[i], ia=g.indexClose[j], ib=g.indexClose[i];
+  if(a==null||b==null||!ia||!ib) return null;
+  return ((b/a)/(ib/ia)-1)*100;
+}
+// 差異比例 = 強弱差 ÷ |指數漲跌幅| ×100%；指數幾乎沒動(<0.05%)時不計算，避免數字爆量
+function ratio(d,ic){ if(d==null||ic==null||Math.abs(ic)<0.05) return null; return d/Math.abs(ic)*100; }
+function fmtR(v){ return v==null?'—':(v>0?'+':'')+Math.round(v).toLocaleString()+'%'; }
+function wins(r,i,N){let c=0,k=0;for(let j=Math.max(1,i-N+1);j<=i;j++){const d=r.diff[j];if(d==null)continue;k++;if(d>0)c++;}return {c,k};}
+function relCurve(r,g,i0,i1){ // 從 i0 起的累積相對強度序列
+  const out=[]; for(let i=i0;i<=i1;i++){const a=r.close[i0],b=r.close[i],ia=g.indexClose[i0],ib=g.indexClose[i];
+    out.push(a==null||b==null?null:((b/a)/(ib/ia)-1)*100);} return out;
+}
+
+// ---------- 版面 ----------
+function renderTabs(){
+  $('#tabs').innerHTML = D.groups.map((g,i)=>`<button class="tab ${i===S.g?'on':''}" data-i="${i}">${g.key==='SOX'?'費半 SOX':'那指 NDX'}</button>`).join('');
+  $('#tabs').querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.g=+b.dataset.i;S.sel=null;S.di=null;renderAll();});
+}
+function renderDates(g){
+  const sel=$('#date');
+  sel.innerHTML = g.dates.map((d,i)=>i?`<option value="${i}">${d.replace(/-/g,'/')}</option>`:'').reverse().join('');
+  if(S.di==null||S.di>=g.dates.length) S.di=g.dates.length-1;
+  sel.value=S.di;
+}
+function rowsFor(g){
+  const i=S.di;
+  let rows = g.rows.map(r=>{
+    const w5=wins(r,i,5), w20=wins(r,i,20);
+    return {...r, d:r.diff[i], c:r.chg[i], ratio:ratio(r.diff[i],g.indexChg[i]), rs5:rs(r,g,i,5), rs20:rs(r,g,i,20), rsAll:rs(r,g,i,null), w5, w20, win20:w20.k?w20.c/w20.k:null};
+  });
+  const key={diff:'d'}[S.sort]||S.sort;
+  rows.sort((a,b)=>{const x=a[key],y=b[key]; if(x==null)return 1; if(y==null)return -1; return S.asc?x-y:y-x;});
+  rows.forEach((r,k)=>r.rank=k+1);
+  if(S.f==='s') rows=rows.filter(r=>r.d>0);
+  if(S.f==='w') rows=rows.filter(r=>r.d<0);
+  if(S.q){const q=S.q.toLowerCase(); rows=rows.filter(r=>r.t.toLowerCase().includes(q)||String(r.name).toLowerCase().includes(q));}
+  return rows;
+}
+function renderTiles(g){
+  const i=S.di, b=g.breadth[i], ic=g.indexChg[i];
+  const all=g.rows.map(r=>({t:r.t,d:r.diff[i]})).filter(r=>r.d!=null).sort((a,b)=>b.d-a.d);
+  const top=all[0], bot=all[all.length-1];
+  $('#tiles').innerHTML = `
+   <div class="tile"><div class="k">${g.name}</div><div class="v ${cls(ic)}">${fmt(ic)}%</div><div class="d">收盤 ${g.indexClose[i]?.toLocaleString()}</div></div>
+   <div class="tile"><div class="k">強勢家數</div><div class="v pos">${b.s}</div><div class="d">占 ${b.p==null?'—':b.p.toFixed(0)}%</div></div>
+   <div class="tile"><div class="k">弱勢家數</div><div class="v neg">${b.w}</div><div class="d">共 ${all.length} 檔有資料</div></div>
+   <div class="tile"><div class="k">最強 / 最弱</div><div class="v" style="font-size:16px;margin-top:6px"><span class="pos">${top?top.t:'—'} ${top?fmt(top.d):''}</span><br><span class="neg">${bot?bot.t:'—'} ${bot?fmt(bot.d):''}</span></div></div>`;
+}
+function spark(vals,w=90,h=24){
+  const v=vals.filter(x=>x!=null); if(v.length<2) return '';
+  let mn=Math.min(0,...v), mx=Math.max(0,...v); if(mx===mn){mx+=1;mn-=1;}
+  const X=i=>i/(vals.length-1)*(w-4)+2, Y=x=>h-2-(x-mn)/(mx-mn)*(h-4);
+  let d='';vals.forEach((x,i)=>{if(x==null)return;d+=(d?'L':'M')+X(i).toFixed(1)+','+Y(x).toFixed(1);});
+  const last=v[v.length-1], c=last>=0?css('--strong'):css('--weak');
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><line x1="2" x2="${w-2}" y1="${Y(0)}" y2="${Y(0)}" stroke="${css('--line')}" stroke-width="1"/><path d="${d}" fill="none" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+}
+function dots(r){ // 近5日強弱點
+  let s='';const i=S.di;for(let j=i-4;j<=i;j++){const d=j>0?r.diff[j]:null;s+=d==null?'<u>·</u>':d>0?'<b>●</b>':d<0?'<s>●</s>':'<u>○</u>';}return `<span class="dots" title="近5日：紅=強 綠=弱">${s}</span>`;
+}
+function renderTable(g){
+  const rows=rowsFor(g);
+  const cols=[['rank','#','rk'],['t','股票','l'],['c','漲跌%',''],['diff','強弱差',''],['ratio','差異比例',''],['tag','強弱',''],['w5','近5日','hide-m'],['rs20','20日RS','hide-m'],['rsAll','3個月RS',''],['sp','3個月走勢','hide-m']];
+  const sortable={diff:1,ratio:1,rs20:1,rsAll:1};
+  let h='<thead><tr>'+cols.map(([k,l,c])=>`<th class="${c} ${S.sort===k?'sorted'+(S.asc?' asc':''):''}" data-k="${sortable[k]?k:''}">${l}</th>`).join('')+'</tr></thead><tbody>';
+  if(!rows.length) h+=`<tr><td colspan="10" class="empty">沒有符合的股票</td></tr>`;
+  rows.forEach(r=>{
+    const tag = r.d==null?'<span class="badge n">—</span>':r.d>0?'<span class="badge s">強</span>':r.d<0?'<span class="badge w">弱</span>':'<span class="badge n">平</span>';
+    h+=`<tr class="row ${S.sel===r.t?'sel':''}" data-t="${r.t}">
+      <td class="rk">${r.rank}</td>
+      <td class="l"><span class="tk">${r.t}</span><span class="nm">${r.name!==r.t?r.name:''}</span></td>
+      <td class="${cls(r.c)}">${fmt(r.c)}</td>
+      <td class="${cls(r.d)}" style="font-weight:700">${fmt(r.d)}</td>
+      <td class="${cls(r.ratio)}" title="強弱差 ÷ |指數漲跌幅|">${fmtR(r.ratio)}</td>
+      <td>${tag}</td>
+      <td class="hide-m">${dots(r)}</td>
+      <td class="hide-m ${cls(r.rs20)}">${fmt(r.rs20,1)}%</td>
+      <td class="${cls(r.rsAll)}">${fmt(r.rsAll,1)}%</td>
+      <td class="hide-m">${spark(relCurve(r,g,0,S.di))}</td></tr>`;
+  });
+  $('#tbl').innerHTML=h+'</tbody>';
+  $('#tblTitle').textContent=`成分股強弱排行・${g.dates[S.di].replace(/-/g,'/')}`;
+  $('#tbl').querySelectorAll('th').forEach(th=>{const k=th.dataset.k;if(!k)return;th.onclick=()=>{if(S.sort===k)S.asc=!S.asc;else{S.sort=k;S.asc=false;}$('#sort').value=k;renderTable(g);};});
+  $('#tbl').querySelectorAll('tr.row').forEach(tr=>tr.onclick=()=>{S.sel=tr.dataset.t;renderDetail(g);renderTable(g);$('#detail').scrollIntoView({behavior:'smooth',block:'start'});});
+  if(!S.sel&&rows[0]){S.sel=rows[0].t;}
+}
+
+// ---------- 圖表（原生 SVG） ----------
+function frame(el,h){const w=el.clientWidth||600;return {w,h,m:{l:40,r:56,t:10,b:22}};}
+function ticksY(mn,mx,n=4){const span=mx-mn||1,step0=span/n,p=Math.pow(10,Math.floor(Math.log10(step0)));const step=[1,2,2.5,5,10].map(x=>x*p).find(x=>span/x<=n)||p*10;const out=[];for(let v=Math.ceil(mn/step)*step;v<=mx+1e-9;v+=step)out.push(+v.toFixed(6));return out;}
+function xLabels(dates,X,y){const n=dates.length,k=Math.max(1,Math.ceil(n/6));let s='';for(let i=0;i<n;i+=k){s+=`<text x="${X(i)}" y="${y}" text-anchor="middle" font-size="11" fill="${css('--t3')}">${dates[i].slice(5).replace('-','/')}</text>`;}return s;}
+function tipAt(el,html,x,y){let t=el.querySelector('.tip');if(!t){t=document.createElement('div');t.className='tip';el.appendChild(t);}t.innerHTML=html;t.style.left=Math.min(Math.max(x,70),el.clientWidth-70)+'px';t.style.top=y+'px';t.style.opacity=1;}
+function hideTip(el){const t=el.querySelector('.tip');if(t)t.style.opacity=0;}
+
+function lineChart(el,{dates,series,h=220,unit='%',mark,onPick,zero=true,fixed}){
+  const {w,m}=frame(el,h); const n=dates.length;
+  let all=series.flatMap(s=>s.v).filter(v=>v!=null); let mn=Math.min(...all),mx=Math.max(...all);
+  if(fixed){mn=fixed[0];mx=fixed[1];} if(zero){mn=Math.min(mn,0);mx=Math.max(mx,0);} const pad=(mx-mn)*.08||1; if(!fixed){mn-=pad;mx+=pad;}
+  const X=i=>m.l+i/(n-1)*(w-m.l-m.r), Y=v=>m.t+(mx-v)/(mx-mn)*(h-m.t-m.b);
+  let s=`<svg viewBox="0 0 ${w} ${h}" height="${h}">`;
+  ticksY(mn,mx).forEach(v=>{s+=`<line x1="${m.l}" x2="${w-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${v===0?css('--t3'):css('--grid')}" stroke-width="1" ${v===0?'':''}/><text x="${m.l-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="${css('--t3')}">${v}${unit}</text>`;});
+  s+=xLabels(dates,X,h-4);
+  if(mark!=null) s+=`<line x1="${X(mark)}" x2="${X(mark)}" y1="${m.t}" y2="${h-m.b}" stroke="${css('--accent')}" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>`;
+  series.forEach(se=>{let d='';se.v.forEach((v,i)=>{if(v==null)return;d+=(d?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);});
+    s+=`<path d="${d}" fill="none" stroke="${se.c}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" ${se.dash?'stroke-dasharray="5 4"':''}/>`;
+    let li=se.v.length-1; while(li>0&&se.v[li]==null)li--; const lv=se.v[li];
+    if(se.label&&lv!=null) s+=`<text x="${X(li)+6}" y="${Y(lv)+4}" font-size="11" font-weight="600" fill="${css('--t2')}">${se.label}</text>`;});
+  s+=`<line class="xh" x1="0" x2="0" y1="${m.t}" y2="${h-m.b}" stroke="${css('--t3')}" stroke-width="1" opacity="0"/>`;
+  series.forEach((se,k)=>s+=`<circle class="pt${k}" r="4" fill="${se.c}" stroke="${css('--surface')}" stroke-width="2" opacity="0"/>`);
+  s+=`<rect x="${m.l}" y="0" width="${w-m.l-m.r}" height="${h}" fill="transparent" style="cursor:${onPick?'pointer':'crosshair'}"/></svg>`;
+  el.innerHTML=s; const svg=el.querySelector('svg'), rect=svg.querySelector('rect');
+  const idx=e=>{const b=svg.getBoundingClientRect();const px=(e.touches?e.touches[0].clientX:e.clientX)-b.left;return Math.round(Math.max(0,Math.min(n-1,(px-m.l)/(w-m.l-m.r)*(n-1))));};
+  const move=e=>{const i=idx(e);const xh=svg.querySelector('.xh');xh.setAttribute('x1',X(i));xh.setAttribute('x2',X(i));xh.setAttribute('opacity',1);
+    let top=h;series.forEach((se,k)=>{const c=svg.querySelector('.pt'+k),v=se.v[i];if(v==null){c.setAttribute('opacity',0);return;}c.setAttribute('cx',X(i));c.setAttribute('cy',Y(v));c.setAttribute('opacity',1);top=Math.min(top,Y(v));});
+    tipAt(el,`<b>${dates[i].replace(/-/g,'/')}</b><br>`+series.map(se=>`${se.name}：${fmt(se.v[i],1)}${unit}`).join('<br>'),X(i),top);};
+  rect.addEventListener('mousemove',move);rect.addEventListener('touchmove',move,{passive:true});
+  rect.addEventListener('mouseleave',()=>{hideTip(el);svg.querySelector('.xh').setAttribute('opacity',0);series.forEach((_,k)=>svg.querySelector('.pt'+k).setAttribute('opacity',0));});
+  if(onPick) rect.addEventListener('click',e=>onPick(idx(e)));
+}
+function barChart(el,{dates,v,ic,sc,h=160,mark}){
+  const {w,m}=frame(el,h); const n=dates.length;
+  const vals=v.filter(x=>x!=null); let mx=Math.max(1,...vals.map(Math.abs)); mx*=1.1; const mn=-mx;
+  const X=i=>m.l+(i+.5)/n*(w-m.l-m.r), bw=Math.max(1,(w-m.l-m.r)/n-2), Y=x=>m.t+(mx-x)/(mx-mn)*(h-m.t-m.b);
+  let s=`<svg viewBox="0 0 ${w} ${h}" height="${h}">`;
+  ticksY(mn,mx,4).forEach(t=>{s+=`<line x1="${m.l}" x2="${w-m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="${t===0?css('--t3'):css('--grid')}"/><text x="${m.l-6}" y="${Y(t)+4}" text-anchor="end" font-size="11" fill="${css('--t3')}">${t}</text>`;});
+  s+=xLabels(dates,i=>X(i),h-4);
+  v.forEach((x,i)=>{if(x==null)return;const y0=Y(0),y1=Y(x),r=Math.min(2,bw/2);const top=Math.min(y0,y1),hh=Math.max(1,Math.abs(y1-y0));
+    s+=`<rect x="${X(i)-bw/2}" y="${top}" width="${bw}" height="${hh}" rx="${r}" fill="${x>=0?css('--strong'):css('--weak')}" opacity="${mark===i?1:.85}" ${mark===i?`stroke="${css('--t1')}" stroke-width="1.5"`:''}/>`;});
+  s+=`<rect class="hit" x="${m.l}" y="0" width="${w-m.l-m.r}" height="${h}" fill="transparent"/></svg>`;
+  el.innerHTML=s; const svg=el.querySelector('svg'),hit=svg.querySelector('.hit');
+  const mv=e=>{const b=svg.getBoundingClientRect();const px=(e.touches?e.touches[0].clientX:e.clientX)-b.left;const i=Math.max(0,Math.min(n-1,Math.floor((px-m.l)/(w-m.l-m.r)*n)));const x=v[i];
+    tipAt(el,`<b>${dates[i].replace(/-/g,'/')}</b><br>個股 ${fmt(sc?.[i])}%・指數 ${fmt(ic?.[i])}%<br>強弱差：${fmt(x)} ${x>0?'（強）':x<0?'（弱）':''}<br>差異比例：${fmtR(ic?ratio(x,ic[i]):null)}`,X(i),x==null?h/2:Math.min(Y(x),Y(0)));};
+  hit.addEventListener('mousemove',mv);hit.addEventListener('touchmove',mv,{passive:true});hit.addEventListener('mouseleave',()=>hideTip(el));
+}
+
+function renderBreadth(g){
+  lineChart($('#breadth'),{dates:g.dates.slice(1),h:170,unit:'%',zero:false,fixed:[0,100],mark:S.di-1,
+    series:[{name:'強勢比例',v:g.breadth.slice(1).map(b=>b.p),c:css('--s1')}],
+    onPick:i=>{S.di=i+1;$('#date').value=S.di;renderAll(true);}});
+}
+function renderDetail(g){
+  const r=g.rows.find(x=>x.t===S.sel); const el=$('#detail');
+  if(!r){el.innerHTML='<div class="empty">點選下方任一檔股票查看曲線</div>';return;}
+  const i=S.di, cum=(arr)=>arr.map(v=>v==null?null:(v/arr.find(x=>x!=null)-1)*100);
+  const d=r.diff[i], w20=wins(r,i,20);
+  el.innerHTML=`<div class="detail-head"><span class="big">${r.t}</span><span class="nm">${r.name!==r.t?r.name:''}</span>
+     <span class="badge ${d>0?'s':d<0?'w':'n'}">${d>0?'強勢':d<0?'弱勢':'持平'} ${fmt(d)}・${fmtR(ratio(d,g.indexChg[i]))}</span>
+     <span class="sub">近20日 ${w20.c}/${w20.k} 天強於指數・3個月相對強度 <b class="${cls(rs(r,g,i,null))}">${fmt(rs(r,g,i,null),1)}%</b></span></div>
+    <div class="raw">原始資料・${g.dates[i].replace(/-/g,'/')}：
+      <b>${r.t}</b> 前收 ${r.close[i-1]??'—'} → 收盤 ${r.close[i]??'—'}（<span class="${cls(r.chg[i])}">${fmt(r.chg[i])}%</span>）
+      ｜ <b>${g.key}</b> 前收 ${g.indexClose[i-1]?.toLocaleString()??'—'} → 收盤 ${g.indexClose[i]?.toLocaleString()??'—'}（<span class="${cls(g.indexChg[i])}">${fmt(g.indexChg[i])}%</span>）
+      ｜ 強弱差 ${fmt(r.chg[i])} − (${fmt(g.indexChg[i])}) = <b class="${cls(d)}">${fmt(d)}</b></div>
+    <h2>累積漲跌幅 vs ${g.key}</h2>
+    <div class="legend"><span><i style="background:${css('--s1')}"></i>${r.t}</span><span><i class="dash"></i>${g.key} 指數</span></div>
+    <div class="chart" id="cumC"></div>
+    <h2 style="margin-top:10px">每日強弱差（個股 − 指數，百分點）</h2>
+    <div class="legend"><span><i style="background:${css('--strong')};height:8px"></i>強勢日</span><span><i style="background:${css('--weak')};height:8px"></i>弱勢日</span></div>
+    <div class="chart" id="diffC"></div>`;
+  lineChart($('#cumC'),{dates:g.dates,mark:i,series:[
+    {name:r.t,v:cum(r.close),c:css('--s1'),label:r.t},
+    {name:g.key,v:cum(g.indexClose),c:css('--idx'),dash:true,label:g.key}]});
+  barChart($('#diffC'),{dates:g.dates.slice(1),v:r.diff.slice(1),ic:g.indexChg.slice(1),sc:r.chg.slice(1),mark:i-1});
+}
+function renderAll(keepSel){
+  const g=D.groups[S.g]; renderTabs(); renderDates(g);
+  if(!keepSel && !S.sel) S.sel=null;
+  renderTiles(g); renderBreadth(g); renderTable(g); renderDetail(g);
+}
+
+// ---------- 事件 ----------
+$('#date').onchange=e=>{S.di=+e.target.value;renderAll(true);};
+$('#sort').onchange=e=>{S.sort=e.target.value;S.asc=false;renderTable(D.groups[S.g]);};
+$('#q').oninput=e=>{S.q=e.target.value.trim();renderTable(D.groups[S.g]);};
+$('#filter').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.f=b.dataset.f;$('#filter').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));renderTable(D.groups[S.g]);});
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{const g=D.groups[S.g];renderBreadth(g);renderDetail(g);},150);});
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>renderAll(true));
+
+D.groups.forEach(prep);
+const gen=new Date(D.generated);
+$('#meta').textContent=`資料區間：${D.groups[0].dates[1]} ～ ${D.groups[0].dates.at(-1)}・更新於 ${gen.toLocaleString('zh-TW',{hour12:false})}`;
+if(D.sample){ $('#banner').innerHTML='<div class="banner sample">⚠️ <b>示範資料：所有數字都是隨機產生，不是真實行情，請勿用來判斷。</b>真實資料需部署到 GitHub（或在電腦執行 update_data.py）後才會出現。</div>'; document.body.insertAdjacentHTML('beforeend','<div class="wm">示範資料・非真實</div>'); }
+$('#foot').innerHTML='強弱差 = 個股當日漲跌幅 − 指數當日漲跌幅。差異比例 = 強弱差 ÷ |指數漲跌幅| × 100%（指數漲跌小於 0.05% 時不計算）。RS（相對強度）= (1+個股區間報酬)/(1+指數區間報酬) − 1。股價為 Yahoo Finance 收盤價（已調整股票分割、未調整股息，與一般看盤軟體一致），資料來源 Yahoo Finance；僅供研究參考，非投資建議。';
+renderAll();
+})();
+</script>
+</body>
+</html>
